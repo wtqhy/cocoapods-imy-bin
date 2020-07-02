@@ -21,7 +21,7 @@ module CBin
     # 只允许二进制的 specification subspec 比源码的 specification subspec 多
     #
     def valid_sources(code_dependencies = false)
-      sources = [binary_source, code_source]
+      sources = binary_source + code_source
       sources.reverse! if code_dependencies
       sources
     end

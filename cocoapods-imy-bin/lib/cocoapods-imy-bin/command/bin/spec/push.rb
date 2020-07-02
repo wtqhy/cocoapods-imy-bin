@@ -105,7 +105,23 @@ module Pod
           end
 
           def repo
-            @binary ? binary_source.name : code_source.name
+            @binary ? binary_source_names : code_source_names
+          end
+
+          def binary_source_names
+            names = []
+            binary_source.each do |source|
+              names << sources.name
+            end
+            names
+          end
+
+          def code_source_names
+            names = []
+            code_source.each do |source|
+              names << sources.name
+            end
+            names
           end
         end
       end

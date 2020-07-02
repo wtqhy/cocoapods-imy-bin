@@ -123,39 +123,40 @@ module Pod
 
             # 采用二进制依赖并且不为开发组件
             use_binary = use_binary_rspecs.include?(rspec)
-            source = use_binary ? sources_manager.binary_source : sources_manager.code_source
+            sources = use_binary ? sources_manager.binary_source : sources_manager.code_source
 
             spec_version = rspec.spec.version
             UI.message 'cocoapods-imy-bin 插件'
             UI.message "- 开始处理 #{rspec.spec.name} #{spec_version} 组件."
 
             begin
-              # 从新 source 中获取 spec,在bin archive中会异常，因为找不到
-              specification = source.specification(rspec.root.name, spec_version)
-              UI.message "#{rspec.root.name} #{spec_version} \r\n specification =#{specification} "
-              # 组件是 subspec
-              if rspec.spec.subspec?
-                specification = specification.subspec_by_name(rspec.name, false, true)
-              end
-              # 这里可能出现分析依赖的 source 和切换后的 source 对应 specification 的 subspec 对应不上
-              # 造成 subspec_by_name 返回 nil，这个是正常现象
-              next unless specification
+              for source in sources do
+                # 从新 source 中获取 spec,在bin archive中会异常，因为找不到
+                specification = source.specification(rspec.root.name, spec_version)
+                UI.message "#{rspec.root.name} #{spec_version} \r\n specification =#{specification} "
+                # 组件是 subspec
+                if rspec.spec.subspec?
+                  specification = specification.subspec_by_name(rspec.name, false, true)
+                end
+                # 这里可能出现分析依赖的 source 和切换后的 source 对应 specification 的 subspec 对应不上
+                # 造成 subspec_by_name 返回 nil，这个是正常现象
+                next unless specification
 
-              used_by_only = if Pod.match_version?('~> 1.7')
-                               rspec.used_by_non_library_targets_only
-                             else
-                               rspec.used_by_tests_only
-                             end
-              # used_by_only = rspec.respond_to?(:used_by_tests_only) ? rspec.used_by_tests_only : rspec.used_by_non_library_targets_only
-              # 组装新的 rspec ，替换原 rspec
-              if use_binary
-                rspec = if Pod.match_version?('~> 1.4.0')
-                          ResolverSpecification.new(specification, used_by_only)
-                        else
-                          ResolverSpecification.new(specification, used_by_only, source)
-                        end
-                UI.message "组装新的 rspec ，替换原 rspec #{rspec.root.name} #{spec_version} \r\n specification =#{specification} \r\n #{rspec} "
-
+                used_by_only = if Pod.match_version?('~> 1.7')
+                                rspec.used_by_non_library_targets_only
+                              else
+                                rspec.used_by_tests_only
+                              end
+                # used_by_only = rspec.respond_to?(:used_by_tests_only) ? rspec.used_by_tests_only : rspec.used_by_non_library_targets_only
+                # 组装新的 rspec ，替换原 rspec
+                if use_binary
+                  rspec = if Pod.match_version?('~> 1.4.0')
+                            ResolverSpecification.new(specification, used_by_only)
+                          else
+                            ResolverSpecification.new(specification, used_by_only, source)
+                          end
+                  UI.message "组装新的 rspec ，替换原 rspec #{rspec.root.name} #{spec_version} \r\n specification =#{specification} \r\n #{rspec} "
+                end
               end
 
             rescue Pod::StandardError => e

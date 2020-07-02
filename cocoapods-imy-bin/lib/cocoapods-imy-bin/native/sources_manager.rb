@@ -8,12 +8,20 @@ module Pod
     class Manager
       # 源码 source
       def code_source
-        source_with_name_or_url(CBin.config.code_repo_url)
+        sources = []
+        CBin.config.code_repo_url.each do |url|
+          sources << source_with_name_or_url(url)
+        end
+        sources
       end
 
       # 二进制 source
       def binary_source
-        source_with_name_or_url(CBin.config.binary_repo_url)
+        sources = []
+        CBin.config.binary_repo_url.each do |url|
+          sources << source_with_name_or_url(url)
+        end
+        sources
       end
     end
   end
